@@ -3,6 +3,8 @@ title: "Streamlet in TLA+"
 author: "Giuliano Losa"
 author-url: 'https://www.losa.fr'
 date: "2022-01-04"
+return-url: '..'
+return-text: '← Return to blog home'
 keywords:
 - "streamlet"
 - "blockchain"
@@ -59,7 +61,7 @@ A valid blockchain (or simply a chain for short) is a valid block tree in which 
 Each epoch `e` has a unique, pre-determined leader (e.g. process `(e mod N)+1`), and processes in epoch e must follow the following rules:
 
 - The leader proposes a new block with epoch number `e` that extends one of the longest notarized chains that the leader knows of (where notarized is defined below).
-- Every process votes for the leader's proposal as long as the proposal is longer than the longest notarized chains that the process ever voted to extend.
+- Every process votes for the leader's proposal as long as the proposal is longer than the longest notarized chains that the process ever voted to extend.[^note1]
 - A block is notarized when it has gathered votes from a quorum in the same epoch, and a chain is notarized when all its blocks, except the genesis block, are notarized.
 - When a notarized chain includes three adjacent blocks with consecutive epoch numbers, the prefix of the chain up to the second of those 3 blocks is considered final.
 
@@ -68,6 +70,8 @@ In practice, a process may increment its epoch using a real-time clock (e.g. eac
 The synchronizer approach is more robust than simply relying on clocks, and it is used by many deployed protocols.
 Surprisingly, it dates back to the [pioneering work of Dwork, Lynch, and Stockmeyer](https://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf) in the 1980s.
 For a recent treatment, see [Gotsman et al.](https://arxiv.org/abs/2008.04167).
+
+[^note1]: this deviates slightly from the original formulation and makes the specification simpler without any downsides
 
 ## Example scenario
 
@@ -119,7 +123,7 @@ No information is lost in the process: in both cases, a block determines a uniqu
 
 For example, this is a block in TLA+ notation:
 
-```
+```{.wide}
 << <<1, tx1>>, <<3, tx3>>, <<4, tx4>> >>
 ```
 
@@ -132,7 +136,7 @@ Finally, the genesis block is the empty sequence `<<>>`.
 We now define the epoch of a block `b` as `0` if `b` is the genesis block and otherwise as the epoch found in the last tuple in `b`.
 In TLA+, this translates to:
 
-```
+```{.wide}
   Epoch(b) ==
       IF b = Genesis
       THEN 0
@@ -142,17 +146,17 @@ In TLA+, this translates to:
 Moreover, the parent of a block `b` is the genesis block if `b` has length 1, and otherwise it's the block obtained by removing the last element of `b`.
 In TLA+:
 
-```
+```{.wide}
   Parent(b) == IF Len(b) = 1 THEN Genesis ELSE SubSeq(b, 1, Len(b)-1)
 ```
 
 ## First specification
 
 We start with a specification that makes use of non-determinism in order to eschew irrelevant details and capture the essence of how Streamlet ensures safety.
-The specification, appearing below and in [`Streamlet.tla`](Streamlet.tla), is very short.
+The specification, appearing below and in [Streamlet.tla](https://github.com/nano-o/streamlet/blob/main/Streamlet.tla), is very short.
 With generous formatting, it consists of a mere 44 lines of PlusCal.
 
-<figure class="wide">
+<figure class="wide extra-wide">
 ```
 CONSTANTS
         P \* The set of processes
@@ -299,7 +303,7 @@ This is reflected as follows in the PlusCal/TLA+ specification:
 
 Given the above, we now state the liveness property as:
 
-```
+```{.wide}
 Liveness == (epoch = GSE+4) => \E b \in Blocks : Final(b) /\ Epoch(b) >= GSE-1
 ```
 
@@ -311,9 +315,10 @@ Thus, any final block with an epoch greater or equal to `GSE-1` was not final wh
 
 ### The sequentialized specification with liveness
 
-Omitting definitions that are the same as before, here is the sequentialized specification of Streamlet:
+Omitting definitions that are the same as before, here is the sequentialized specification of Streamlet.
+You can also find it in [SequentializedStreamlet.tla](https://github.com/nano-o/streamlet/blob/main/SequentializedStreamlet.tla)
 
-<figure class="wide">
+<figure class="wide extra-wide">
 ```
 1   --algorithm Streamlet {
 2       variables
