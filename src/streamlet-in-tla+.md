@@ -30,33 +30,11 @@ Moreover, the specification I present are also an example of:
 - how to use non-determinism to obtain simple specifications
 - how to exploit the commutativity of actions to speed-up model-checking by sequentializing the specification.
 
-<!-- Even though Streamlet is concise, I think that understanding precisely why it works is not that simple. Moreover, the safety proof in the [original paper](https://eprint.iacr.org/2020/088.pdf) uses the operational reasoning style, where one considers an entire execution at once and one reasons about the possible ordering of events. -->
-<!-- In my experience, this style is very error-prone, and it's not easy to check that no case was overlooked. -->
-
-<!-- Instead, I'd prefer a proof that exhibits an inductive invariant that implies safety. -->
-<!-- This is because we only have to consider a single step, instead of an entire execution, to check whether an invariant is inductive, and thus it's easier to not miss a case. -->
-<!-- For example, why Paxos is safe is crystal clear to me because, even though the algorithm may look more complex than Streamlet, Paxos has a simple inductive invariant that I can easily check. -->
-
-<!-- My initial goal was to find an inductive invariant that implies Streamlet's safety, at which point I could really say that I understand Streamlet. -->
-<!-- To build up my intuition about the algorithm, I decided to model it in TLA+ and use the TLC model-checker to test various scenarios and putative (inductive and non-inductive) invariants. -->
-
-<!-- I haven't found an inductive invariant for Streamlet yet, and this post is about the modeling and model-checking Streamlet in TLA+. -->
-<!-- Maybe I'll find an inductive invariant in the future and write about it. -->
-
-<!-- ## Model-checking results -->
-
-<!-- The TLC model-checker is an explicit-state model checker, which means that it can only handle fixed configurations (e.g. 3 processes, 5 epochs, etc.) -->
-<!-- The biggest challenge when using TLC is the state-explosion problem, where model-checking even small configurations quickly becomes intractable as the configuration size increases. -->
-
-<!-- To enable TLC to check the safety and liveness of Streamlet in interesting configurations, I abstracted over several aspects of Streamlet (e.g. there is no network in my model). -->
-<!-- I believe that the abstractions I made are sound, i.e. they do not remove any behaviors, but I have not checked that mechanically. -->
-<!-- Finally, I have also applied a reduction base on commutativity to soundly and drastically restrict the number of behaviors that TLC has to explore. -->
-
-<!-- TODO: the model is in-between crash-stop and Byzantine: in asynchronous rounds, the leader can issue malicious proposals. -->
-
 I was able to exhaustively check the safety and liveness properties of (crash-stop) Streamlet in interesting configurations:
-* with 3 crash-stop processes, 2 block payloads, and 7 asynchronous epochs;
-* with 3 crash-stop processes, 2 block payloads, and 5 asynchronous epochs followed by 4 synchronous epochs (i.e. "GST" happens before epoch 6).
+
+* with 3 processes, 2 block payloads, and 7 asynchronous epochs;
+* with 3 processes, 2 block payloads, and 5 asynchronous epochs followed by 4 synchronous epochs (i.e. "GST" happens before epoch 6).
+
 
 Those results give me very high confidence that streamlet satisfies its claimed properties.
 
@@ -79,13 +57,14 @@ We say that a set of blocks forms a valid block tree when the directed graph for
 A valid blockchain (or simply a chain for short) is a valid block tree in which every process has at most one successor, i.e. in which there are not forks.
 
 Each epoch `e` has a unique, pre-determined leader (e.g. process `(e mod N)+1`), and processes in epoch e must follow the following rules:
+
 - The leader proposes a new block with epoch number `e` that extends one of the longest notarized chains that the leader knows of (where notarized is defined below).
 - Every process votes for the leader's proposal as long as the proposal is longer than the longest notarized chains that the process ever voted to extend.
 - A block is notarized when it has gathered votes from a quorum in the same epoch, and a chain is notarized when all its blocks, except the genesis block, are notarized.
 - When a notarized chain includes three adjacent blocks with consecutive epoch numbers, the prefix of the chain up to the second of those 3 blocks is considered final.
 
 Process proceed from one epoch to the next through unspecified means.
-In practice, a process may increment its epoch using a real-time clock (e.g. each epoch lasting 2 seconds), or processes may use a synchronizer sub-protocol.
+In practice, a process may increment its epoch using a real-time clock (e.g. each epoch lasting 2 seconds), or, even though I don't think this is discussed in the Streamlet paper, processes may use a synchronizer sub-protocol.
 The synchronizer approach is more robust than simply relying on clocks, and it is used by many deployed protocols.
 Surprisingly, it dates back to the [pioneering work of Dwork, Lynch, and Stockmeyer](https://groups.csail.mit.edu/tds/papers/Lynch/jacm88.pdf) in the 1980s.
 For a recent treatment, see [Gotsman et al.](https://arxiv.org/abs/2008.04167).
@@ -102,16 +81,6 @@ Blocks with epoch number 3 and 4 in the finalized chain are final because of the
 
 
 ![Possible blocktree produce by the Streamlet algorithm](../img/blocktree.svg)
-
-<!-- For example, this is a possible scenario: -->
-<!-- * In epoch 1, the leader proposes `<< <<1, tx1>> >>` but not enough processes receive the proposal, and `<< <<1, tx1>> >>` is not notarized. -->
-<!-- * In epoch 2, the leader proposes `<< <<2, tx2>> >>` and `<< <<2, tx1>> >>` is notarized. -->
-<!-- * In epoch 3, the leader proposes `<< <<3, tx3>> >>` because it hasn't yet learned that `<< <<2,tx2>> >>` is notarized; moreover, a quorum has not learned that `<< <<2,tx2>> >>` is notarized, and thus `<< <<3, tx3>> >>` is notarized. -->
-  <!-- Note that at this point, we have two conflicting blocks of height `1` which are both notarized. However, none of those are final. -->
-<!-- * In epoch 4, the leader has leant that `<< <<3,tx3>> >>` is notarized and makes a proposal that extends it, e.g. it proposes `<< <<3, tx3>>, <<4,tx4>> >>`. -->
-<!-- * Epoch 5 proceeds similarly to epoch 4 and, at the end of epoch 5, `<< <<3, tx3>>, <<4,tx4>>, <<5,tx5>> >>` is notarized. Since both `<< <<3,tx3>> >>` and `<< <<3,tx3>>, <<4,tx4>> >>` are notarized, the chain `<< <<3,tx3>>, <<4,tx4>> >>` is now final. -->
-
-<!-- TODO: depict graphically -->
 
 ## Safety guarantee
 
