@@ -3,6 +3,12 @@ title: "Streamlet in TLA+"
 author: "Giuliano Losa"
 author-url: 'https://www.losa.fr'
 date: "2022-01-04"
+keywords:
+- "streamlet"
+- "blockchain"
+- "consensus"
+- "tla"
+- "PlusCal"
 ---
 
 In this blog post, we will see how to specify the Streamlet algorithm in PlusCal/TLA+ with a focus on writing simple specifications that are amenable to model-checking of both safety and liveness properties with TLC.
