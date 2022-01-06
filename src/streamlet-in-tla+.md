@@ -3,7 +3,7 @@ title: "Streamlet in TLA+"
 author: "Giuliano Losa"
 author-url: 'https://www.losa.fr'
 date: "2022-01-04"
-return-url: '..'
+return-url: 'https://www.losa.fr/blog/'
 return-text: '← Return to blog home'
 keywords:
 - "streamlet"
@@ -156,7 +156,7 @@ We start with a specification that makes use of non-determinism in order to esch
 The specification, appearing below and in [Streamlet.tla](https://github.com/nano-o/streamlet/blob/main/Streamlet.tla), is very short.
 With generous formatting, it consists of a mere 44 lines of PlusCal.
 
-<figure class="wide extra-wide">
+<figure class="wide">
 ```
 CONSTANTS
         P \* The set of processes
@@ -318,7 +318,7 @@ Thus, any final block with an epoch greater or equal to `GSE-1` was not final wh
 Omitting definitions that are the same as before, here is the sequentialized specification of Streamlet.
 You can also find it in [SequentializedStreamlet.tla](https://github.com/nano-o/streamlet/blob/main/SequentializedStreamlet.tla)
 
-<figure class="wide extra-wide">
+<figure class="wide">
 ```
 1   --algorithm Streamlet {
 2       variables
@@ -392,10 +392,10 @@ This means that processes always have the same view of the system, which preclud
 In contrast, the specifications that I present reflect the fact that processes have different, partial views of what blocks have been notarized or not.
 
 Shir Cohen and Dahlia Malkhi compare Streamlet and HotStuff in the following [blog post](https://dahliamalkhi.github.io/posts/2020/12/what-they-didnt-teach-you-in-streamlet/).
-They not that Streamlet lacks some of the qualities of an engineering-ready protocol like HotStuff.
+They note that Streamlet lacks some of the qualities of an engineering-ready protocol like HotStuff.
 While their blog post is very interesting, I do not agree with the claim that Streamlet requires synchronized epochs.
 The original Streamlet presentation indeed stipulates that processes proceeds through epochs in lock-steps (using synchronized real-time clocks). However, any synchronizer that guarantees that epochs become synchronous after GST
- (in the sense that we have used in the current post) 
+ (in the sense that we have used in the current post) should work too.
 
 # Other notes
 
