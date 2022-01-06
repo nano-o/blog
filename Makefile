@@ -1,43 +1,52 @@
-#
-# Author: Jake Zimmerman <jake@zimmerman.io>
-#
-# ===== Usage ================================================================
-#
-# make                  Prepare blog/ folder (all markdown & assets)
-# make blog/index.html  Recompile just blog/index.html
-#
-# make watch            Start a local HTTP server and rebuild on changes
-# PORT=4242 make watch  Like above, but use port 4242
-#
-# make clean            Delete all generated files
-#
-# ============================================================================
-
 # LICENSE: https://blueoakcouncil.org/license/1.0.0
 
-SOURCES := $(shell find src -type f -name '*.md')
-TARGETS := $(patsubst src/%.md,blog/%.html,$(SOURCES))
+
+BLOG_SOURCES := $(shell find src/blog -type f -name '*.md')
+BLOG_TARGETS := $(patsubst src/blog/%.md,www/blog/%.html,$(BLOG_SOURCES))
 
 .PHONY: all
-all: blog/.nojekyll $(TARGETS)
+all: www css img $(BLOG_TARGETS) www/index.html
 
 .PHONY: clean
 clean:
-	rm -rf blog
+	rm -rf www
 
 .PHONY: watch
 watch:
 	./tools/serve.sh --watch
 
-blog/.nojekyll: $(wildcard public/*) public/.nojekyll
-	rm -vrf blog && mkdir -p blog && cp -vr public/.nojekyll public/* blog
+.PHONY: www
+www:
+	mkdir -p www/blog
 
-.PHONY: blog
-blog: blog/.nojekyll
+www/index.html: src/index.md src/template.html5 Makefile
+	pandoc \
+		--from markdown+smart \
+		--filter pandoc-sidenote \
+		--to html5+smart \
+		--template=src/template \
+		--css="css/theme.css" \
+		--css="css/skylighting-solarized-theme.css" \
+		--output "www/index.html" \
+		"src/index.md"
 
-# Generalized rule: how to build a .html file from each .md
-# Note: you will need pandoc 2 or greater for this to work
-blog/%.html: src/%.md template.html5 Makefile tools/build.sh
-	tools/build.sh "$<" "$@"
+.PHONY: css
+css: www $(wildcard public/*)
+	rsync -rup public/css www/
 
+www/blog/%.html: src/blog/%.md src/blog/template.html5 Makefile
+	pandoc \
+		--katex \
+		--from markdown+tex_math_single_backslash \
+		--filter pandoc-sidenote \
+		--to html5+smart \
+		--template=src/blog/template \
+		--css="../css/theme.css" \
+		--css="../css/skylighting-solarized-theme.css" \
+		--toc \
+		--output "$@" \
+		"$<"
 
+.PHONY: img
+img: www src/img
+	rsync -rup src/img www/

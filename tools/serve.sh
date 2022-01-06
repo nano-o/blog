@@ -10,16 +10,12 @@
 
 set -euo pipefail
 
-cd blog/
+cd www/
 python3 -m http.server "${PORT:-8000}" &
 http_server_pid="$!"
 cd -
 
-if [ "$(uname)" = "Darwin" ]; then
-  open "http://127.0.0.1:8000"
-else
-  xdg-open "http://127.0.0.1:8000"
-fi
+xdg-open "http://127.0.0.1:8000"
 
 watchman-make -p 'src/*' 'public/*' '*.html5' 'Makefile' -r 'make'
 kill "$http_server_pid"

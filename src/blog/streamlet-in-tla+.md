@@ -3,7 +3,7 @@ title: "Streamlet in TLA+"
 author: "Giuliano Losa"
 author-url: 'https://www.losa.fr'
 date: "2022-01-04"
-return-url: 'https://www.losa.fr/blog/'
+return-url: '.'
 return-text: '← Return to blog home'
 keywords:
 - "streamlet"
