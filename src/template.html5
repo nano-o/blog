@@ -39,11 +39,10 @@ $endfor$
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
-$if(date)$
-<p class="date $if(toc)$before-toc$endif$"><time datetime="$date$">$date$</time></p>
-$endif$
+<img src="/img/painting.jpg" alt="Painting of Giuliano" style="width: 15em">
 </blockquote>
 </header>
+
 
 $if(toc)$
 <nav id="$idprefix$TOC" role="doc-toc">

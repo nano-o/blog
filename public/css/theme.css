@@ -1144,5 +1144,11 @@ table, figure, pre {
 /* }}} */
 /* }}} */
 
+/* ----- Footer ----------- {{{ */
+footer {
+				text-align: center
+}
+/* }}} */
+
 /* vim:fdm=marker
  */

@@ -19,7 +19,7 @@ watch:
 www:
 	mkdir -p www/blog
 
-www/index.html: src/index.md src/template.html5 Makefile
+www/index.html: src/index.md src/template.html5 Makefile footer.html
 	pandoc \
 		--from markdown+smart \
 		--filter pandoc-sidenote \
@@ -28,13 +28,14 @@ www/index.html: src/index.md src/template.html5 Makefile
 		--css="css/theme.css" \
 		--css="css/skylighting-solarized-theme.css" \
 		--output "www/index.html" \
+		-A footer.html \
 		"src/index.md"
 
 .PHONY: css
 css: www $(wildcard public/*)
 	rsync -rup public/css www/
 
-www/blog/%.html: src/blog/%.md src/blog/template.html5 Makefile
+www/blog/%.html: src/blog/%.md src/blog/template.html5 Makefile footer.html
 	pandoc \
 		--katex \
 		--from markdown+tex_math_single_backslash \
@@ -44,6 +45,7 @@ www/blog/%.html: src/blog/%.md src/blog/template.html5 Makefile
 		--css="../css/theme.css" \
 		--css="../css/skylighting-solarized-theme.css" \
 		--toc \
+		-A footer.html \
 		--output "$@" \
 		"$<"
 
